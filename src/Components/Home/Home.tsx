@@ -17,7 +17,9 @@ const Title = (): JSX.Element => {
         alignItems="flex-end"
         className="title"
       >
-        <Grid item>The NEW Spotify Recommendation Engine</Grid>
+        <Grid item className="font">
+          The NEW <span style={{fontWeight: 700}}>Spotify</span> Recommendation Engine
+        </Grid>
       </Grid>
     );
 }
@@ -68,14 +70,14 @@ const CredentialsForm: React.FC<CredentialsFormProps> = (props): JSX.Element => 
 };
 
 const Home = (): JSX.Element => {
-    const [formContent, setFormContent] = useState<FormContentType>(FormContentType.CREDENTIALS)
+    const [formContent, setFormContent] = useState<FormContentType>(FormContentType.CREDENTIALS);
 
     const formContentRenderer: ContentRenderer = useMemo(() => {
         return {
           CREDENTIALS: () => <CredentialsForm onSubmit={setFormContent} />,
           SONGFORM: () => <SongForm />,
         };
-    }, [formContent]);
+    }, []);
 
     return (
       <>
