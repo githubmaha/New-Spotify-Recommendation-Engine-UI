@@ -38,7 +38,13 @@ const App = (): JSX.Element => {
 
   return (
     <BrowserRouter>
-      <AnimGrid container direction="column" spacing={0} className="layout" style={gradient}>
+      <AnimGrid
+        container
+        direction="column"
+        spacing={0}
+        className="layout"
+        style={gradient}
+      >
         <Switch>
           <Route exact path="/">
             <Home></Home>

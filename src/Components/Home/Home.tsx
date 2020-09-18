@@ -1,10 +1,13 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Grid from '@material-ui/core/Grid';
 import './styles.css';
 import { TextField, Button } from '@material-ui/core';
+import useSpotify from './../../Hooks/useSpotify';
+import { useLocation } from 'react-router-dom';
+import queryString from 'query-string'
 
 enum FormContentType {
-  CREDENTIALS = "CREDENTIALS",
+  LOGINFORM = "LOGINFORM",
   SONGFORM = "SONGFORM",
 }
 
@@ -36,7 +39,7 @@ const SongForm = (): JSX.Element => {
         <Grid item>
           <TextField label="Track Url" variant="outlined" />
         </Grid>
-        <Grid item className="submit-button">
+        <Grid item className="spacing">
           <Button variant="outlined" size="large" color="primary">
             Submit
           </Button>
@@ -45,28 +48,11 @@ const SongForm = (): JSX.Element => {
     );
 }
 
-type CredentialsFormProps = {
-  onSubmit: (formContentType: FormContentType) => void;
+type LoginFormProps = {
+  onSubmit: () => string;
 };
 
-const CredentialsForm: React.FC<CredentialsFormProps> = (props): JSX.Element => {
-  const [clientId, setClientId] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
-
-  const clientIdOnChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setClientId(event.target.value);
-    },
-    []
-  );
-
-  const clientSecretOnChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setClientSecret(event.target.value);
-    },
-    []
-  );
-
+const LoginForm: React.FC<LoginFormProps> = (props): JSX.Element => {
   return (
     <Grid
       container
@@ -75,29 +61,14 @@ const CredentialsForm: React.FC<CredentialsFormProps> = (props): JSX.Element => 
       alignItems="center"
       className="height-spacing"
     >
-      <Grid item>
-        <TextField
-          label="Client Id"
-          variant="outlined"
-          onChange={clientIdOnChange}
-        />
-      </Grid>
-      <Grid item className="spacing">
-        <TextField
-          label="Client Secret"
-          type="password"
-          variant="outlined"
-          onChange={clientSecretOnChange}
-        />
-      </Grid>
       <Grid item className="spacing">
         <Button
           variant="outlined"
           size="large"
           color="primary"
-          onClick={() => props.onSubmit(FormContentType.SONGFORM)}
+          href={props.onSubmit()}
         >
-          Submit
+          Login
         </Button>
       </Grid>
     </Grid>
@@ -105,21 +76,35 @@ const CredentialsForm: React.FC<CredentialsFormProps> = (props): JSX.Element => 
 };
 
 const Home = (): JSX.Element => {
-    const [formContent, setFormContent] = useState<FormContentType>(FormContentType.CREDENTIALS);
+  const { search } = useLocation();
+  const [formContent, setFormContent] = useState<FormContentType>(FormContentType.LOGINFORM);
+  const { loggedIn, getLoginUrl, login } = useSpotify();
 
-    const formContentRenderer: ContentRenderer = useMemo(() => {
-        return {
-          CREDENTIALS: () => <CredentialsForm onSubmit={setFormContent} />,
-          SONGFORM: () => <SongForm />,
-        };
-    }, []);
+  const formContentRenderer: ContentRenderer = useMemo(() => {
+    return {
+      LOGINFORM: () => <LoginForm onSubmit={getLoginUrl} />,
+      SONGFORM: () => <SongForm />,
+    };
+  }, [getLoginUrl]);
 
-    return (
-      <>
-        <Title></Title>
-        {formContentRenderer[formContent]()}
-      </>
-    );
+  useEffect(() => {
+    if(queryString.parse(search).code) {
+      setFormContent(FormContentType.SONGFORM);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loggedIn) {
+      setFormContent(FormContentType.SONGFORM);
+    }
+  }, [loggedIn]);
+
+  return (
+    <>
+      <Title />
+      {formContentRenderer[formContent]()}
+    </>
+  );
 };
 
 export default Home;

@@ -1,4 +1,4 @@
 type AuthObject = {
-    clientId: string,
-    clientSecret: string
-}
+  clientSecret: string;
+  redirectUri: string;
+};

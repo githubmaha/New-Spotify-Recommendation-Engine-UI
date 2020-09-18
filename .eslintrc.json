@@ -28,6 +28,7 @@
         "semi": [
             2,
             "always"
-        ]
+        ],
+        "noImplicitAny": "warn"
     }
 }
