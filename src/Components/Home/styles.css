@@ -1,0 +1,15 @@
+.song-form {
+    height: 20vh;
+}
+
+.submit-button {
+    padding-left: 30px;
+}
+
+.title {
+    height: 15vh;
+    font-family: 'Rubik', sans-serif;
+}
+.border {
+    border: 1px solid red;
+}
