@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Grid from '@material-ui/core/Grid';
 import './styles.css';
 import { TextField, Button } from '@material-ui/core';
@@ -26,7 +26,13 @@ const Title = (): JSX.Element => {
 
 const SongForm = (): JSX.Element => {
     return (
-      <Grid container item justify="center" alignItems="center" className="song-form">
+      <Grid
+        container
+        item
+        justify="center"
+        alignItems="center"
+        className="height-spacing"
+      >
         <Grid item>
           <TextField label="Track Url" variant="outlined" />
         </Grid>
@@ -44,18 +50,47 @@ type CredentialsFormProps = {
 };
 
 const CredentialsForm: React.FC<CredentialsFormProps> = (props): JSX.Element => {
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+
+  const clientIdOnChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setClientId(event.target.value);
+    },
+    []
+  );
+
+  const clientSecretOnChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setClientSecret(event.target.value);
+    },
+    []
+  );
+
   return (
     <Grid
       container
       item
       justify="center"
       alignItems="center"
-      className="song-form"
+      className="height-spacing"
     >
       <Grid item>
-        <TextField label="Credentials" variant="outlined" />
+        <TextField
+          label="Client Id"
+          variant="outlined"
+          onChange={clientIdOnChange}
+        />
       </Grid>
-      <Grid item className="submit-button">
+      <Grid item className="spacing">
+        <TextField
+          label="Client Secret"
+          type="password"
+          variant="outlined"
+          onChange={clientSecretOnChange}
+        />
+      </Grid>
+      <Grid item className="spacing">
         <Button
           variant="outlined"
           size="large"

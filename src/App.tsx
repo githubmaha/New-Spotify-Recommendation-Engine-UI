@@ -13,7 +13,7 @@ const App = (): JSX.Element => {
       tension: 40,
       friction: 40
     },
-    to: async (next, cancel) => {
+    to: async (next) => {
       while (true) {
         await next({
           background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
