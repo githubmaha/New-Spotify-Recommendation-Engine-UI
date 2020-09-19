@@ -1,37 +1,31 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import './App.css';
 import Home from './Components/Home/Home';
 import Notfound from './Components/NotFound/NotFound';
 import Grid from '@material-ui/core/Grid';
-import { Route, BrowserRouter, Switch } from 'react-router-dom';
-import { animated, useSpring } from "react-spring";
+import { Route, BrowserRouter, Switch, Redirect } from 'react-router-dom';
+import { animated, useSpring } from 'react-spring';
+import UserDashboard from './Components/UserDashboard/UserDashboard';
+import { useContext } from 'react';
+import { SpotifyAuthContext } from './Contexts/SpotifyAuthContext';
 
 const App = (): JSX.Element => {
+  const spotifyAuth = useContext(SpotifyAuthContext);
+
   const gradient = useSpring({
     config: {
       mass: 1,
       tension: 40,
-      friction: 40
+      friction: 40,
     },
-    to: async (next) => {
-      while (true) {
-        await next({
-          background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
-        });
-        await next({
-          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-        });
-        await next({
-          background: "linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)",
-        });
-        await next({
-          background: "linear-gradient(135deg, #c3cfe2 0%, #c3cfe2 100%)",
-        });
-      }
-    },
-    from: {
-      background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
-    },
+    to: [
+      { background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+      { background: "linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)" },
+      { background: "linear-gradient(135deg, #c3cfe2 0%, #c3cfe2 100%)" },
+      { background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)" }
+    ],
+    from: { background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)" },
+    loop: true,
   });
 
   const AnimGrid = animated(Grid);
@@ -47,7 +41,10 @@ const App = (): JSX.Element => {
       >
         <Switch>
           <Route exact path="/">
-            <Home></Home>
+            {spotifyAuth.code ? <Redirect to="/UserDashboard" /> : <Home />}
+          </Route>
+          <Route exact path="/UserDashboard">
+            {spotifyAuth.code ? <UserDashboard /> : <Redirect to="/" />}
           </Route>
           <Route>
             <Notfound></Notfound>

@@ -1,14 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useContext } from 'react';
 import Grid from '@material-ui/core/Grid';
 import './styles.css';
 import { TextField, Button } from '@material-ui/core';
 import useSpotify from './../../Hooks/useSpotify';
 import { useLocation } from 'react-router-dom';
 import queryString from 'query-string'
+import ContentRenderer from '../../Types/ContentRenderer';
+import { SpotifyAuthContext } from './../../Contexts/SpotifyAuthContext';
 
 enum FormContentType {
-  LOGINFORM = "LOGINFORM",
-  SONGFORM = "SONGFORM",
+  HOME = "HOME",
 }
 
 const Title = (): JSX.Element => {
@@ -28,24 +29,52 @@ const Title = (): JSX.Element => {
 }
 
 const SongForm = (): JSX.Element => {
-    return (
-      <Grid
-        container
-        item
-        justify="center"
-        alignItems="center"
-        className="height-spacing"
-      >
-        <Grid item>
-          <TextField label="Track Url" variant="outlined" />
-        </Grid>
-        <Grid item className="spacing">
-          <Button variant="outlined" size="large" color="primary">
-            Submit
-          </Button>
-        </Grid>
+  const [trackUrl, setTrackUrl] = useState("");
+  const [playlistUrl, setPlaylistUrl] = useState("");
+
+  const trackUrlOnChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setTrackUrl(event.target.value);
+    },
+    [],
+  )
+
+  const playlistUrlOnChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setPlaylistUrl(event.target.value);
+    },
+    []
+  );
+
+  return (
+    <Grid
+      container
+      item
+      justify="center"
+      alignItems="center"
+      className="height-spacing"
+    >
+      <Grid item>
+        <TextField
+          label="Track Url"
+          variant="outlined"
+          onChange={trackUrlOnChange}
+        />
       </Grid>
-    );
+      <Grid item className="spacing">
+        <TextField
+          label="Playlist Url"
+          variant="outlined"
+          onChange={playlistUrlOnChange}
+        />
+      </Grid>
+      <Grid item className="spacing">
+        <Button variant="outlined" size="large" color="primary">
+          Submit
+        </Button>
+      </Grid>
+    </Grid>
+  );
 }
 
 type LoginFormProps = {
@@ -77,27 +106,27 @@ const LoginForm: React.FC<LoginFormProps> = (props): JSX.Element => {
 
 const Home = (): JSX.Element => {
   const { search } = useLocation();
-  const [formContent, setFormContent] = useState<FormContentType>(FormContentType.LOGINFORM);
-  const { loggedIn, getLoginUrl, login } = useSpotify();
+  const [formContent, setFormContent] = useState<FormContentType>(FormContentType.HOME);
+  const { getLoginUrl, login } = useSpotify();
+  const spotifyAuth = useContext(SpotifyAuthContext);
 
-  const formContentRenderer: ContentRenderer = useMemo(() => {
+  const formContentRenderer: ContentRenderer<FormContentType> = useMemo(() => {
     return {
-      LOGINFORM: () => <LoginForm onSubmit={getLoginUrl} />,
-      SONGFORM: () => <SongForm />,
+      HOME: () => (
+        <>
+          <LoginForm onSubmit={getLoginUrl} />
+          <SongForm />
+        </>
+        )
     };
   }, [getLoginUrl]);
 
   useEffect(() => {
-    if(queryString.parse(search).code) {
-      setFormContent(FormContentType.SONGFORM);
+    if (queryString.parse(search).code) {
+      // @ts-ignore
+      spotifyAuth.setCode(queryString.parse(search).code);
     }
-  }, []);
-
-  useEffect(() => {
-    if (loggedIn) {
-      setFormContent(FormContentType.SONGFORM);
-    }
-  }, [loggedIn]);
+  }, [search]);
 
   return (
     <>
