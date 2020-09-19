@@ -131,9 +131,12 @@ const Home = (): JSX.Element => {
 
   useEffect(() => {
     const parsedHash: ParsedHashType = queryString.parse(hash);
-    if (parsedHash.access_token && parsedHash.expires_in && parsedHash.state === spotifyAuth.state) {
+    console.log(parsedHash.state);
+    console.log(spotifyAuth.state);
+    if (parsedHash.access_token && parsedHash.expires_in && parsedHash.state) {
       spotifyAuth.setToken(parsedHash.access_token);
       spotifyAuth.setExpiresIn(parsedHash.expires_in);
+      spotifyAuth.setExpiresIn(parsedHash.state);
     }
   }, [hash]);
 
