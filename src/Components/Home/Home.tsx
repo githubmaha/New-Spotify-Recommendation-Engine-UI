@@ -4,7 +4,7 @@ import './styles.css';
 import { TextField, Button } from '@material-ui/core';
 import useSpotify from './../../Hooks/useSpotify';
 import { useLocation } from 'react-router-dom';
-import queryString from 'query-string'
+import queryString, { ParsedQuery } from 'query-string'
 import ContentRenderer from '../../Types/ContentRenderer';
 import { SpotifyAuthContext } from './../../Contexts/SpotifyAuthContext';
 
@@ -78,10 +78,12 @@ const SongForm = (): JSX.Element => {
 }
 
 type LoginFormProps = {
-  onSubmit: () => string;
+  getLoginUrl: (state) => string;
 };
 
 const LoginForm: React.FC<LoginFormProps> = (props): JSX.Element => {
+  const spotifyAuth = useContext(SpotifyAuthContext);
+  
   return (
     <Grid
       container
@@ -90,12 +92,12 @@ const LoginForm: React.FC<LoginFormProps> = (props): JSX.Element => {
       alignItems="center"
       className="height-spacing"
     >
-      <Grid item className="spacing">
+      <Grid item>
         <Button
           variant="outlined"
           size="large"
           color="primary"
-          href={props.onSubmit()}
+          href={props.getLoginUrl(spotifyAuth.state)}
         >
           Login
         </Button>
@@ -104,29 +106,36 @@ const LoginForm: React.FC<LoginFormProps> = (props): JSX.Element => {
   );
 };
 
+type ParsedHashType = ParsedQuery<string> & {
+  access_token?: string;
+  expires_in?: string;
+  state?: string;
+}
+
 const Home = (): JSX.Element => {
-  const { search } = useLocation();
+  const { hash } = useLocation();
   const [formContent, setFormContent] = useState<FormContentType>(FormContentType.HOME);
-  const { getLoginUrl, login } = useSpotify();
+  const { getLoginUrl } = useSpotify();
   const spotifyAuth = useContext(SpotifyAuthContext);
 
   const formContentRenderer: ContentRenderer<FormContentType> = useMemo(() => {
     return {
       HOME: () => (
         <>
-          <LoginForm onSubmit={getLoginUrl} />
+          <LoginForm getLoginUrl={getLoginUrl} />
           <SongForm />
         </>
-        )
+      ),
     };
   }, [getLoginUrl]);
 
   useEffect(() => {
-    if (queryString.parse(search).code) {
-      // @ts-ignore
-      spotifyAuth.setCode(queryString.parse(search).code);
+    const parsedHash: ParsedHashType = queryString.parse(hash);
+    if (parsedHash.access_token && parsedHash.expires_in && parsedHash.state === spotifyAuth.state) {
+      spotifyAuth.setToken(parsedHash.access_token);
+      spotifyAuth.setExpiresIn(parsedHash.expires_in);
     }
-  }, [search]);
+  }, [hash]);
 
   return (
     <>

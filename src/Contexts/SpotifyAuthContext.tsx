@@ -1,43 +1,48 @@
 import React, { createContext, useState, useMemo } from "react";
+import { v4 as uuid } from "uuid";
 
 type SpotifyAuthContextType = {
-    code: string;
-    secret: string;
-    isLoggedIn: boolean;
-    setCode: React.Dispatch<React.SetStateAction<string>> | null
-    setSecret: React.Dispatch<React.SetStateAction<string>> | null
+  token: string;
+  expiresIn: string;
+  isLoggedIn: boolean;
+  setToken: React.Dispatch<React.SetStateAction<string>> | ((param) => void);
+  setExpiresIn: React.Dispatch<React.SetStateAction<string>> | ((param) => void);
+  state: string;
 };
 
 const initialContext: SpotifyAuthContextType = {
-  code: "",
-  secret: "",
+  token: "",
+  expiresIn: "",
   isLoggedIn: false,
-  setCode: null,
-  setSecret: null,
+  setToken: (param) => {},
+  setExpiresIn: (param) => {},
+  state: uuid(),
 };
 
-export const SpotifyAuthContext = createContext<SpotifyAuthContextType>(initialContext);
+export const SpotifyAuthContext: React.Context<SpotifyAuthContextType> = createContext<SpotifyAuthContextType>(initialContext);
 
 const SpotifyAuthProvider = (props): JSX.Element => {
-    const [code, setCode] = useState("");
-    const [secret, setSecret] = useState("");
+    const [token, setToken] = useState("");
+    const [expiresIn, setExpiresIn] = useState("");
+    const [state, setState] = useState(initialContext.state);
     
     const isLoggedIn: boolean = useMemo((): boolean => {
-        return !!code/* && !!secret*/;
-    }, [code, secret]);
+      return !!token /* && !!expiresIn*/;
+    }, [token, expiresIn]);
 
     return (
-        <SpotifyAuthContext.Provider 
+      <SpotifyAuthContext.Provider
         value={{
-            code: code,
-            secret: secret,
-            isLoggedIn: isLoggedIn,
-            setCode: setCode,
-            setSecret: setSecret
+          token: token,
+          expiresIn: expiresIn,
+          state: state,
+          isLoggedIn: isLoggedIn,
+          setToken: setToken,
+          setExpiresIn: setExpiresIn,
         }}
-        >
-            {props.children}
-        </SpotifyAuthContext.Provider>
+      >
+        {props.children}
+      </SpotifyAuthContext.Provider>
     );
 };
 

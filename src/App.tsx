@@ -41,10 +41,10 @@ const App = (): JSX.Element => {
       >
         <Switch>
           <Route exact path="/">
-            {spotifyAuth.code ? <Redirect to="/UserDashboard" /> : <Home />}
+            {spotifyAuth.token ? <Redirect to="/UserDashboard" /> : <Home />}
           </Route>
           <Route exact path="/UserDashboard">
-            {spotifyAuth.code ? <UserDashboard /> : <Redirect to="/" />}
+            {spotifyAuth.token ? <UserDashboard /> : <Redirect to="/" />}
           </Route>
           <Route>
             <Notfound></Notfound>
