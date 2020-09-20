@@ -1,47 +1,115 @@
-import React, { createContext, useState, useMemo } from "react";
-import { v4 as uuid } from "uuid";
+import React, { createContext, useReducer } from "react";
+import PublicAPIAuthObject from "../Types/Spotify/PublicAPIAuthObject";
+import UserAPIAuthObject from "../Types/Spotify/UserAPIAuthObject";
+
+type SpotifyPublicAPIAuthType = {
+  access_token: string;
+  expires_in: string;
+  isLoggedIn: boolean;
+};
+
+type SpotifyUserAPIAuthType = SpotifyPublicAPIAuthType &{
+  state: string;
+};
 
 type SpotifyAuthContextType = {
-  token: string;
-  expiresIn: string;
-  state: string;
-  isLoggedIn: boolean;
-  setToken: React.Dispatch<React.SetStateAction<string>> | ((param) => void);
-  setExpiresIn: React.Dispatch<React.SetStateAction<string>> | ((param) => void);
-  setState: React.Dispatch<React.SetStateAction<string>> | ((param) => void);
+  userAPIAuth: SpotifyUserAPIAuthType;
+  publicAPIAuth: SpotifyPublicAPIAuthType;
+  userAPIAuthDispatch: React.Dispatch<SpotifyUserAPIAuthReducerActionType> | (() =>  void);
+  publicAPIAuthDispatch: React.Dispatch<SpotifyPublicAPIAuthReducerActionType> | (() =>  void);
 };
 
 const initialContext: SpotifyAuthContextType = {
-  token: "",
-  expiresIn: "",
-  state: "",
-  isLoggedIn: false,
-  setToken: (param) => {},
-  setExpiresIn: (param) => {},
-  setState: (param) => {}
+  userAPIAuth: {
+    access_token: "",
+    expires_in: "",
+    state: "",
+    isLoggedIn: false
+  },
+  publicAPIAuth: {
+    access_token: "",
+    expires_in: "",
+    isLoggedIn: false
+  },
+  userAPIAuthDispatch: () => {},
+  publicAPIAuthDispatch: () => {}
 };
 
 export const SpotifyAuthContext: React.Context<SpotifyAuthContextType> = createContext<SpotifyAuthContextType>(initialContext);
 
+type SpotifyUserAPIAuthReducerActionType = {
+  type: string;
+  payload: UserAPIAuthObject;
+};
+
+const spotifyUserAPIAuthReducer = (
+  authState: SpotifyUserAPIAuthType,
+  action: SpotifyUserAPIAuthReducerActionType
+) => {
+  switch (action.type) {
+    case "modify":
+      const access_token = action.payload.access_token;
+      const expires_in = action.payload.expires_in;
+      const state = action.payload.state;
+      const isLoggedIn =
+        !!action.payload.access_token && !!action.payload.state;
+      return { access_token, expires_in, state, isLoggedIn };
+
+    default:
+      throw new Error("Invalid action type");
+  }
+};
+
+type SpotifyPublicAPIAuthReducerActionType = {
+  type: string;
+  payload: PublicAPIAuthObject;
+};
+
+const spotifyPublicAPIAuthReducer = (
+  authState: SpotifyPublicAPIAuthType,
+  action: SpotifyPublicAPIAuthReducerActionType
+) => {
+  switch (action.type) {
+    case "modify":
+      const access_token = action.payload.access_token;
+      const expires_in = action.payload.expires_in;
+      const isLoggedIn = !!action.payload.access_token;
+      return { access_token, expires_in, isLoggedIn };
+    default:
+      throw new Error("Invalid action type");
+  }
+};
+
+const initialUserAPIAuthState: SpotifyUserAPIAuthType = {
+  access_token: "",
+  expires_in: "",
+  state: "",
+  isLoggedIn: false,
+};
+
+const initialPublicAPIAuthState: SpotifyPublicAPIAuthType = {
+  access_token: "",
+  expires_in: "",
+  isLoggedIn: false,
+};
+
 const SpotifyAuthProvider = (props): JSX.Element => {
-    const [token, setToken] = useState("");
-    const [expiresIn, setExpiresIn] = useState("");
-    const [state, setState] = useState("");
-    
-    const isLoggedIn: boolean = useMemo((): boolean => {
-      return !!token /* && !!expiresIn*/;
-    }, [token, expiresIn]);
+    const [userAPIAuth, userAPIAuthDispatch] = useReducer(
+      spotifyUserAPIAuthReducer,
+      initialUserAPIAuthState
+    );
+    const [publicAPIAuth, publicAPIAuthDispatch] = useReducer(
+      spotifyPublicAPIAuthReducer,
+      initialPublicAPIAuthState
+    );
 
     return (
       <SpotifyAuthContext.Provider
         value={{
-          token: token,
-          expiresIn: expiresIn,
-          state: state,
-          isLoggedIn: isLoggedIn,
-          setToken: setToken,
-          setExpiresIn: setExpiresIn,
-          setState: setState
+          userAPIAuth: userAPIAuth,
+          publicAPIAuth: publicAPIAuth,
+          userAPIAuthDispatch: userAPIAuthDispatch,
+          publicAPIAuthDispatch: publicAPIAuthDispatch
         }}
       >
         {props.children}

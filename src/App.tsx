@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import './App.css';
 import Home from './Components/Home/Home';
 import Notfound from './Components/NotFound/NotFound';
@@ -41,10 +41,10 @@ const App = (): JSX.Element => {
       >
         <Switch>
           <Route exact path="/">
-            {spotifyAuth.token ? <Redirect to="/UserDashboard" /> : <Home />}
+            {spotifyAuth.userAPIAuth.isLoggedIn ? <Redirect to="/UserDashboard" /> : <Home />}
           </Route>
           <Route exact path="/UserDashboard">
-            {spotifyAuth.token ? <UserDashboard /> : <Redirect to="/" />}
+            {spotifyAuth.userAPIAuth.isLoggedIn ? <UserDashboard /> : <Redirect to="/" />}
           </Route>
           <Route>
             <Notfound></Notfound>
